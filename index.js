@@ -1,38 +1,40 @@
-async function processImage() {
-    const fileInput = document.getElementById('upload');
-    const file = fileInput.files[0];
-  
-    if (!file) {
-      alert('Please upload an image.');
-      return;
+const express = require('express');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.static('public'));
+app.use(express.json());
+
+app.post('/.netlify/functions/processImage', async (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const apiEndpoint = 'https://generativelanguage.googleapis.com';
+
+  const formData = new FormData();
+  formData.append('file', req.body.file);
+
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('API request failed');
     }
-  
-    const formData = new FormData();
-    formData.append('file', file);
-  
-    try {
-      const response = await fetch('/.netlify/functions/processImage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ file })
-      });
-  
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-  
-      const result = await response.json();
-      displayResult(result);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to process the image.');
-    }
+
+    const result = await response.json();
+    res.json(result);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Failed to process the image.');
   }
-  
-  function displayResult(result) {
-    const resultDiv = document.getElementById('result');
-    resultDiv.textContent = JSON.stringify(result, null, 2);
-  }
-  
+});
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
