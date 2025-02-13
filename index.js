@@ -1,10 +1,12 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname)));
+
 app.use(express.json());
 
 app.post('/.netlify/functions/processImage', async (req, res) => {
