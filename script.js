@@ -34,6 +34,7 @@ async function processImage() {
   reader.readAsDataURL(file);
   reader.onloadend = async function() {
     const base64data = reader.result.split(',')[1];
+    const filename = file.name; // Get the file name
 
     try {
       const response = await fetch('/.netlify/functions/processImage', {
@@ -41,7 +42,7 @@ async function processImage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ file: base64data })
+        body: JSON.stringify({ file: base64data, filename: filename })
       });
 
       if (!response.ok) {

@@ -2,18 +2,25 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 
 exports.handler = async function(event, context) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const apiEndpoint = 'https://generativelanguage.googleapis.com/';
+  const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
+  const apiEndpoint = 'https://generativelanguage.googleapis.com';  // Verify this endpoint
 
+  const { file, filename } = JSON.parse(event.body);  // Parse the file and filename from the event body
   const formData = new FormData();
-  formData.append('file', event.body.file);
+  formData.append('file', Buffer.from(file, 'base64'), {
+    filename: filename,  // Use the original filename
+    contentType: 'image/png'  // You might need to adjust the content type based on the file type
+  });
+
+  // Temporary console log to verify the API key and other data
+  console.log(`API Key: ${apiKey}`);
+  console.log(`Filename: ${filename}`);
 
   try {
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: formData
     });
