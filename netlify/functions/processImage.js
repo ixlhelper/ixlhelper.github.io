@@ -17,10 +17,11 @@ exports.handler = async function(event, context) {
 
   try {
     const result = await model.generateContent([prompt, image]);
-    console.log(result.response.text());
+    const cleanText = result.response.text().replace(/[\n{}]/g, '');  // Clean up the text
+    console.log(cleanText);
     return {
       statusCode: 200,
-      body: JSON.stringify({ solution: result.response.text() }),
+      body: JSON.stringify({ solution: cleanText }),
     };
   } catch (error) {
     console.error('Error:', error);
