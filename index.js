@@ -1,42 +1,68 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const FormData = require('form-data');
-const path = require('path');
-const app = express();
-const port = process.env.PORT || 3000;
+// Initialize Eruda toggle
+let erudaToggleText = '';
+const erudaSequence = 'eruda';
 
-app.use(express.static(path.join(__dirname)));
-
-app.use(express.json());
-
-app.post('/.netlify/functions/processImage', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const apiEndpoint = 'https://generativelanguage.googleapis.com';
-
-  const formData = new FormData();
-  formData.append('file', req.body.file);
-
-  try {
-    const response = await fetch(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error('API request failed');
+document.addEventListener('keypress', (event) => {
+  erudaToggleText += event.key;
+  if (erudaToggleText === erudaSequence) {
+    if (!window.erudaInitialized) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+      document.body.appendChild(script);
+      script.onload = function() {
+        eruda.init();
+        window.erudaInitialized = true;
+      };
+    } else {
+      eruda.destroy();
+      window.erudaInitialized = false;
     }
-
-    const result = await response.json();
-    res.json(result);
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).send('Failed to process the image.');
+    erudaToggleText = '';
+  }
+  // Reset sequence if more than needed keys are pressed
+  if (erudaToggleText.length > erudaSequence.length) {
+    erudaToggleText = '';
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+async function processImage() {
+  const fileInput = document.getElementById('upload');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert('Please upload an image.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onloadend = async function() {
+    const base64data = reader.result.split(',')[1];
+
+    try {
+      const response = await fetch('/.netlify/functions/processImage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ file: base64data })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${errorText}`);
+      }
+
+      const result = await response.json();
+      displayResult(result);
+    } catch (error) {
+      console.error('Error:', error);
+      alert(`Failed to process the image: ${error.message}`);
+    }
+  };
+}
+
+function displayResult(result) {
+  const resultDiv = document.getElementById('result');
+  resultDiv.textContent = JSON.stringify(result, null, 2);
+}
