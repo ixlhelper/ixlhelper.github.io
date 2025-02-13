@@ -1,8 +1,9 @@
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 exports.handler = async function(event, context) {
   const apiKey = process.env.GEMINI_API_KEY;
-  const apiEndpoint = 'generativelanguage.googleapis.com';
+  const apiEndpoint = 'https://generativelanguage.googleapis.com/v1/images:annotate';
 
   const formData = new FormData();
   formData.append('file', event.body.file);
@@ -11,13 +12,16 @@ exports.handler = async function(event, context) {
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: formData
     });
 
     if (!response.ok) {
-      throw new Error('API request failed');
+      const errorText = await response.text();
+      console.error(`API request failed: ${errorText}`);
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -26,9 +30,10 @@ exports.handler = async function(event, context) {
       body: JSON.stringify(result)
     };
   } catch (error) {
+    console.error('Error:', error);
     return {
       statusCode: 500,
-      body: 'Failed to process the image.'
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
