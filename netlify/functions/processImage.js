@@ -3,11 +3,6 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 exports.handler = async function(event, context) {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
 
-  // Temporary console log to verify the API key
-  setTimeout(() => {
-    console.log(`API Key: ${apiKey}`);
-  }, 5000);
-
   const { file, filename } = JSON.parse(event.body);  // Parse the file and filename from the event body
   const client = new GoogleGenerativeAI({ apiKey });
 
