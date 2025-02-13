@@ -1,39 +1,34 @@
 const express = require('express');
-const fetch = require('node-fetch');
-const FormData = require('form-data');
 const path = require('path');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname)));
-
 app.use(express.json());
 
 app.post('/.netlify/functions/processImage', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const apiEndpoint = 'https://generativelanguage.googleapis.com';
+  const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
+  const { file, filename } = req.body;  // Parse the file and filename from the request body
 
-  const formData = new FormData();
-  formData.append('file', req.body.file);
+  const client = new GoogleGenerativeAI({ apiKey });
 
   try {
-    const response = await fetch(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`
+    const response = await client.annotateImage({
+      image: {
+        content: file,
       },
-      body: formData
+      features: [{ type: 'LABEL_DETECTION' }],
     });
 
-    if (!response.ok) {
+    if (!response) {
       throw new Error('API request failed');
     }
 
-    const result = await response.json();
-    res.json(result);
+    res.json(response);
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).send('Failed to process the image.');
+    res.status(500).send(`Failed to process the image: ${error.message}`);
   }
 });
 
