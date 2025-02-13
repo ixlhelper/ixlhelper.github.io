@@ -6,7 +6,7 @@ exports.handler = async function(event, context) {
   const apiEndpoint = 'https://generativelanguage.googleapis.com/';
 
   const formData = new FormData();
-  formData.append('file', event.body.file);  // Attach the raw body directly
+  formData.append('file', event.body.file);
 
   try {
     const response = await fetch(apiEndpoint, {

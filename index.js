@@ -1,64 +1,42 @@
-function loadEruda() {
-  var script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
-  document.body.appendChild(script);
-  script.onload = function () {
-      eruda.init();
-  };
-}
+const express = require('express');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+const path = require('path');
+const app = express();
+const port = process.env.PORT || 3000;
 
-(function () {
-  var keyword = '';
-  document.addEventListener('keypress', function (event) {
-      keyword += event.key.toLowerCase();
-      if (keyword.endsWith('eruda')) {
-          loadEruda();
-          keyword = '';
-      }
-      if (keyword.length > 5) {
-          keyword = keyword.slice(-5);
-      }
-  });
-})();
+app.use(express.static(path.join(__dirname)));
 
-async function processImage() {
-  const fileInput = document.getElementById('upload');
-  const file = fileInput.files[0];
+app.use(express.json());
 
-  if (!file) {
-    alert('Please upload an image.');
-    return;
-  }
+app.post('/.netlify/functions/processImage', async (req, res) => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const apiEndpoint = 'https://generativelanguage.googleapis.com';
 
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onloadend = async function() {
-    const base64data = reader.result.split(',')[1];
+  const formData = new FormData();
+  formData.append('file', req.body.file);
 
-    try {
-      const response = await fetch('/.netlify/functions/processImage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ file: base64data })
-      });
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: formData
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API request failed: ${errorText}`);
-      }
-
-      const result = await response.json();
-      displayResult(result);
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Failed to process the image: ${error.message}`);
+    if (!response.ok) {
+      throw new Error('API request failed');
     }
-  };
-}
 
-function displayResult(result) {
-  const resultDiv = document.getElementById('result');
-  resultDiv.textContent = JSON.stringify(result, null, 2);
-}
+    const result = await response.json();
+    res.json(result);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Failed to process the image.');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
