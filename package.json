@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "@google/generative-ai": "^1.0.0",
+    "@google/generative-ai": "^latest",
     "node-fetch": "^2.6.1",
-    "form-data": "^3.0.1"
+    "form-data": "^3.0.1",
+    "fs": "^0.0.1-security"
   },
   "devDependencies": {
     "netlify-cli": "^6.14.1"
