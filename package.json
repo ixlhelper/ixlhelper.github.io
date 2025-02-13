@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "@google/generative-ai": "^latest",
     "node-fetch": "^2.6.1",
     "form-data": "^3.0.1",
     "fs": "^0.0.1-security"
