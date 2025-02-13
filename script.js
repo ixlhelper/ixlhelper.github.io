@@ -37,7 +37,7 @@ async function processImage() {
     const filename = file.name; // Get the original filename
 
     try {
-      const response = await fetch('/.netlify/functions/processImage', {
+      const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
