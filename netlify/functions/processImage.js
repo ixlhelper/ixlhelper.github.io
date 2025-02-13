@@ -2,17 +2,18 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 
 exports.handler = async function(event, context) {
-  const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
-  const apiEndpoint = 'https://generativelanguage.googleapis.com/v1/images:annotate';  // Verify this is the correct endpoint
+  const apiKey = process.env.GEMINI_API_KEY;
+  const apiEndpoint = 'https://generativelanguage.googleapis.com/';
 
   const formData = new FormData();
-  formData.append('file', event.body);  // Attach the raw body directly
+  formData.append('file', event.body.file);  // Attach the raw body directly
 
   try {
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: formData
     });

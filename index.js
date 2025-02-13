@@ -1,29 +1,25 @@
-// Initialize Eruda toggle
-let erudaToggleText = '';
-const erudaSequence = 'eruda';
+function loadEruda() {
+  var script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+  document.body.appendChild(script);
+  script.onload = function () {
+      eruda.init();
+  };
+}
 
-document.addEventListener('keypress', (event) => {
-  erudaToggleText += event.key;
-  if (erudaToggleText === erudaSequence) {
-    if (!window.erudaInitialized) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/eruda';
-      document.body.appendChild(script);
-      script.onload = function() {
-        eruda.init();
-        window.erudaInitialized = true;
-      };
-    } else {
-      eruda.destroy();
-      window.erudaInitialized = false;
-    }
-    erudaToggleText = '';
-  }
-  // Reset sequence if more than needed keys are pressed
-  if (erudaToggleText.length > erudaSequence.length) {
-    erudaToggleText = '';
-  }
-});
+(function () {
+  var keyword = '';
+  document.addEventListener('keypress', function (event) {
+      keyword += event.key.toLowerCase();
+      if (keyword.endsWith('eruda')) {
+          loadEruda();
+          keyword = '';
+      }
+      if (keyword.length > 5) {
+          keyword = keyword.slice(-5);
+      }
+  });
+})();
 
 async function processImage() {
   const fileInput = document.getElementById('upload');
