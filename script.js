@@ -34,7 +34,7 @@ async function processImage() {
   reader.readAsDataURL(file);
   reader.onloadend = async function() {
     const base64data = reader.result.split(',')[1];
-    const filename = file.name; // Get the original filename
+    const filename = file.name;
 
     try {
       const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
@@ -63,3 +63,14 @@ function displayResult(result) {
   const resultDiv = document.getElementById('result');
   resultDiv.textContent = JSON.stringify(result, null, 2);
 }
+
+document.querySelectorAll('.switch').forEach(button => {
+  button.addEventListener('click', function() {
+    const subject = this.dataset.subject;
+    document.body.className = '';
+    document.body.classList.add(subject);
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.textContent = `Switched to ${subject.toUpperCase()}`;
+  });
+});

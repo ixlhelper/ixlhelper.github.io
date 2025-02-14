@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IXL Helper</title>
-  <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
     <h1>IXL Helper</h1>
+    <div class="switches">
+      <button class="switch" data-subject="ela">ELA</button>
+      <button class="switch" data-subject="math">Math</button>
+      <button class="switch" data-subject="science">Science</button>
+    </div>
     <div class="upload-box">
       <input type="file" id="upload" accept="image/*">
       <button onclick="processImage()">Upload and Analyze</button>
