@@ -31,7 +31,6 @@ exports.handler = async function(event, context) {
     try {
       cleanText = cleanText
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold text
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic text
         .replace(/`([^`]+)`/g, '<code>$1</code>')  // Inline code
         .replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>')  // Code blocks
         .replace(/^# (.+)$/gm, '<h1>$1</h1>')  // Heading 1
@@ -43,7 +42,8 @@ exports.handler = async function(event, context) {
         .replace(/&amp;/g, '&')  // Decode &
         .replace(/&lt;/g, '<')  // Decode <
         .replace(/&gt;/g, '>')  // Decode >
-        .replace(/\*/g, '×');  // Replace asterisks with multiplication symbol
+        .replace(/(\d) \*(\d)/g, '$1 × $2')  // Correct multiplication
+        .replace(/\*/g, '<em>');  // Italicize text
 
       console.log('Cleaned response text:', cleanText);
     } catch (regexError) {
