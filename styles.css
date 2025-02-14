@@ -103,3 +103,20 @@ button:hover {
   margin: 10px 0;
   color: #e0e0e0;
 }
+
+strong, b {
+  font-size: 1.2em;
+  color: #ff4500;  /* More noticeable color */
+}
+
+em {
+  font-size: 1.1em;
+  color: #ffa500;
+}
+
+code {
+  background-color: #000;
+  color: #ffdd57;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
