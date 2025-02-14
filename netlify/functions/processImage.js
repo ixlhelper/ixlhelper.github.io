@@ -33,11 +33,7 @@ exports.handler = async function(event, context) {
       .replace(/^# (.+)$/gm, '<h1>$1</h1>')  // Heading 1
       .replace(/^## (.+)$/gm, '<h2>$1</h2>')  // Heading 2
       .replace(/^### (.+)$/gm, '<h3>$1</h3>')  // Heading 3
-      .replace(/
-
-\[(.+?)\]
-
-\((.+?)\)/g, '<a href="$2">$1</a>')  // Links
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')  // Links
       .replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>')  // Lists
       .replace(/^\> (.+)$/gm, '<blockquote>$1</blockquote>')  // Blockquotes
       .replace(/&/g, '&amp;')  // Escape &
