@@ -1,3 +1,26 @@
+function loadEruda() {
+  var script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+  document.body.appendChild(script);
+  script.onload = function () {
+      eruda.init();
+  };
+}
+
+(function () {
+  var keyword = '';
+  document.addEventListener('keypress', function (event) {
+      keyword += event.key.toLowerCase();
+      if (keyword.endsWith('eruda')) {
+          loadEruda();
+          keyword = '';
+      }
+      if (keyword.length > 5) {
+          keyword = keyword.slice(-5);
+      }
+  });
+})();
+
 let currentSubject = 'ela';
 
 async function processImage() {
@@ -8,13 +31,13 @@ async function processImage() {
   let prompt = '';
   switch (currentSubject) {
     case 'ela':
-      prompt = textInput ? `ELA: ${textInput}` : 'Please provide an image or text to analyze for ELA.';
+      prompt = textInput ? `Tell me a step by step solution to this ELA problem: ${textInput}` : 'Please provide an image or text to analyze for ELA.';
       break;
     case 'math':
-      prompt = textInput ? `Math: ${textInput}` : 'Please provide an image or text to analyze for Math.';
+      prompt = textInput ? `Tell me a step by step solution to this Math problem: ${textInput}` : 'Please provide an image or text to analyze for Math.';
       break;
     case 'science':
-      prompt = textInput ? `Science: ${textInput}` : 'Please provide an image or text to analyze for Science.';
+      prompt = textInput ? `Tell me a step by step solution to this Science problem: ${textInput}` : 'Please provide an image or text to analyze for Science.';
       break;
     default:
       prompt = 'Please provide an image or text to analyze.';
