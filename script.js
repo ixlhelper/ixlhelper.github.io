@@ -111,7 +111,7 @@ function displayResult(solution) {
 
   const solutionText = document.createElement('div');
   solutionText.className = 'text-bubble';
-  solutionText.textContent = solution;
+  solutionText.innerHTML = solution;  // Use innerHTML instead of textContent
   resultDiv.appendChild(solutionText);
 }
 

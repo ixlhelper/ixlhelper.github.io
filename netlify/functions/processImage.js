@@ -43,7 +43,7 @@ exports.handler = async function(event, context) {
         .replace(/&lt;/g, '<')  // Decode <
         .replace(/&gt;/g, '>')  // Decode >
         .replace(/(\d) \*(\d)/g, '$1 × $2')  // Correct multiplication
-        .replace(/\*/g, '<em>');  // Italicize text
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');  // Italicize text
 
       console.log('Cleaned response text:', cleanText);
     } catch (regexError) {
