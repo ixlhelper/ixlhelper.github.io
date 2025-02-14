@@ -24,9 +24,11 @@ function loadEruda() {
 async function processImage() {
   const fileInput = document.getElementById('upload');
   const file = fileInput.files[0];
+  const textInput = document.getElementById('text-input').value.trim();
+  const prompt = textInput ? textInput : 'Please provide an image or text to analyze.';
 
-  if (!file) {
-    alert('Please upload an image.');
+  if (!file && !textInput) {
+    alert('Please upload an image or type an issue.');
     return;
   }
 
@@ -34,7 +36,7 @@ async function processImage() {
   reader.readAsDataURL(file);
   reader.onloadend = async function() {
     const base64data = reader.result.split(',')[1];
-    const filename = file.name;
+    const filename = file ? file.name : '';
 
     try {
       const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
@@ -42,7 +44,7 @@ async function processImage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ file: base64data, filename: filename })
+        body: JSON.stringify({ file: base64data, filename: filename, prompt: prompt })
       });
 
       if (!response.ok) {
@@ -51,7 +53,7 @@ async function processImage() {
       }
 
       const result = await response.json();
-      displayResult(result);
+      displayResult(result.solution);
     } catch (error) {
       console.error('Error:', error);
       alert(`Failed to process the image: ${error.message}`);
@@ -59,9 +61,14 @@ async function processImage() {
   };
 }
 
-function displayResult(result) {
+function displayResult(solution) {
   const resultDiv = document.getElementById('result');
-  resultDiv.textContent = JSON.stringify(result, null, 2);
+  resultDiv.innerHTML = '';  // Clear previous results
+
+  const solutionText = document.createElement('div');
+  solutionText.className = 'text-bubble';
+  solutionText.textContent = solution.replace('{solution}', '');  // Remove {solution} tag
+  resultDiv.appendChild(solutionText);
 }
 
 document.querySelectorAll('.switch').forEach(button => {
@@ -71,6 +78,12 @@ document.querySelectorAll('.switch').forEach(button => {
     document.body.classList.add(subject);
 
     const resultDiv = document.getElementById('result');
-    resultDiv.textContent = `Switched to ${subject.toUpperCase()}`;
+    resultDiv.innerHTML = '';  // Clear previous results
+
+    const prompt = `Switched to ${subject.toUpperCase()}`;
+    const switchText = document.createElement('div');
+    switchText.className = 'text-bubble';
+    switchText.textContent = prompt;
+    resultDiv.appendChild(switchText);
   });
 });
