@@ -19,7 +19,27 @@ exports.handler = async function(event, context) {
       ? await model.generateContent([prompt, image]) 
       : await model.generateContent([prompt]);
 
-    const cleanText = result.response.text().replace(/{solution}/g, '');  // Clean up the text
+    // Replace markdown with HTML tags and symbols
+    let cleanText = result.response.text()
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold text
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic text
+      .replace(/`([^`]+)`/g, '<code>$1</code>')  // Inline code
+      .replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>')  // Code blocks
+      .replace(/^\#{1} (.+)$/gm, '<h1>$1</h1>')  // Heading 1
+      .replace(/^\#{2} (.+)$/gm, '<h2>$1</h2>')  // Heading 2
+      .replace(/^\#{3} (.+)$/gm, '<h3>$1</h3>')  // Heading 3
+      .replace(/
+
+\[(.+?)\]
+
+\((.+?)\)/g, '<a href="$2">$1</a>')  // Links
+      .replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>')  // Lists
+      .replace(/^\> (.+)$/gm, '<blockquote>$1</blockquote>')  // Blockquotes
+      .replace(/&/g, '&amp;')  // Escape &
+      .replace(/</g, '&lt;')  // Escape <
+      .replace(/>/g, '&gt;')  // Escape >
+      .replace(/\*/g, '×');  // Replace asterisks with multiplication symbol
+
     console.log(cleanText);
     return {
       statusCode: 200,
