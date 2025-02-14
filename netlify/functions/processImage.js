@@ -4,6 +4,8 @@ exports.handler = async function(event, context) {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
   const { file, filename, prompt } = JSON.parse(event.body);  // Parse the file, filename, and prompt from the event body
 
+  console.log('Received API request with prompt:', prompt);
+
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
@@ -13,6 +15,9 @@ exports.handler = async function(event, context) {
       mimeType: 'image/png'  // Adjust the content type based on the file type
     }
   } : null;
+
+  console.log('File data:', file ? 'File provided' : 'No file provided');
+  console.log('Image object:', image);
 
   try {
     const result = image 
@@ -25,9 +30,9 @@ exports.handler = async function(event, context) {
       .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic text
       .replace(/`([^`]+)`/g, '<code>$1</code>')  // Inline code
       .replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>')  // Code blocks
-      .replace(/^\#{1} (.+)$/gm, '<h1>$1</h1>')  // Heading 1
-      .replace(/^\#{2} (.+)$/gm, '<h2>$1</h2>')  // Heading 2
-      .replace(/^\#{3} (.+)$/gm, '<h3>$1</h3>')  // Heading 3
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')  // Heading 1
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')  // Heading 2
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')  // Heading 3
       .replace(/
 
 \[(.+?)\]
@@ -40,13 +45,14 @@ exports.handler = async function(event, context) {
       .replace(/>/g, '&gt;')  // Escape >
       .replace(/\*/g, '×');  // Replace asterisks with multiplication symbol
 
-    console.log(cleanText);
+    console.log('Generated content:', cleanText);
+
     return {
       statusCode: 200,
       body: JSON.stringify({ solution: cleanText }),
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error during API request:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
