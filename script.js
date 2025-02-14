@@ -1,50 +1,67 @@
-function loadEruda() {
-  var script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/eruda';
-  document.body.appendChild(script);
-  script.onload = function () {
-      eruda.init();
-  };
-}
-
-(function () {
-  var keyword = '';
-  document.addEventListener('keypress', function (event) {
-      keyword += event.key.toLowerCase();
-      if (keyword.endsWith('eruda')) {
-          loadEruda();
-          keyword = '';
-      }
-      if (keyword.length > 5) {
-          keyword = keyword.slice(-5);
-      }
-  });
-})();
+let currentSubject = 'ela';
 
 async function processImage() {
   const fileInput = document.getElementById('upload');
   const file = fileInput.files[0];
   const textInput = document.getElementById('text-input').value.trim();
-  const prompt = textInput ? textInput : 'Please provide an image or text to analyze.';
+
+  let prompt = '';
+  switch (currentSubject) {
+    case 'ela':
+      prompt = textInput ? `ELA: ${textInput}` : 'Please provide an image or text to analyze for ELA.';
+      break;
+    case 'math':
+      prompt = textInput ? `Math: ${textInput}` : 'Please provide an image or text to analyze for Math.';
+      break;
+    case 'science':
+      prompt = textInput ? `Science: ${textInput}` : 'Please provide an image or text to analyze for Science.';
+      break;
+    default:
+      prompt = 'Please provide an image or text to analyze.';
+  }
 
   if (!file && !textInput) {
     alert('Please upload an image or type an issue.');
     return;
   }
 
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onloadend = async function() {
-    const base64data = reader.result.split(',')[1];
-    const filename = file ? file.name : '';
+  if (file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async function() {
+      const base64data = reader.result.split(',')[1];
+      const filename = file ? file.name : '';
 
+      try {
+        const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ file: base64data, filename: filename, prompt: prompt })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API request failed: ${errorText}`);
+        }
+
+        const result = await response.json();
+        displayResult(result.solution);
+      } catch (error) {
+        console.error('Error:', error);
+        alert(`Failed to process the image: ${error.message}`);
+      }
+    };
+  } else {
+    // Handle case where only text input is provided
     try {
       const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ file: base64data, filename: filename, prompt: prompt })
+        body: JSON.stringify({ file: null, filename: '', prompt: prompt })
       });
 
       if (!response.ok) {
@@ -56,9 +73,13 @@ async function processImage() {
       displayResult(result.solution);
     } catch (error) {
       console.error('Error:', error);
-      alert(`Failed to process the image: ${error.message}`);
+      alert(`Failed to process the text: ${error.message}`);
     }
-  };
+  }
+}
+
+function submitText() {
+  processImage();
 }
 
 function displayResult(solution) {
@@ -67,23 +88,22 @@ function displayResult(solution) {
 
   const solutionText = document.createElement('div');
   solutionText.className = 'text-bubble';
-  solutionText.textContent = solution.replace('{solution}', '');  // Remove {solution} tag
+  solutionText.textContent = solution;
   resultDiv.appendChild(solutionText);
 }
 
 document.querySelectorAll('.switch').forEach(button => {
   button.addEventListener('click', function() {
-    const subject = this.dataset.subject;
-    document.body.className = '';
-    document.body.classList.add(subject);
+    currentSubject = this.dataset.subject;
+    const dotsColor = getComputedStyle(this).color;
+    document.querySelectorAll('.text-bubble').forEach(dot => dot.style.color = dotsColor);
 
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = '';  // Clear previous results
 
-    const prompt = `Switched to ${subject.toUpperCase()}`;
     const switchText = document.createElement('div');
     switchText.className = 'text-bubble';
-    switchText.textContent = prompt;
+    switchText.textContent = `Switched to ${currentSubject.toUpperCase()}`;
     resultDiv.appendChild(switchText);
   });
 });
