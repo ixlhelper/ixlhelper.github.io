@@ -24,24 +24,32 @@ exports.handler = async function(event, context) {
       ? await model.generateContent([prompt, image]) 
       : await model.generateContent([prompt]);
 
-    // Replace markdown with HTML tags and symbols
-    let cleanText = result.response.text()
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold text
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic text
-      .replace(/`([^`]+)`/g, '<code>$1</code>')  // Inline code
-      .replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>')  // Code blocks
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')  // Heading 1
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')  // Heading 2
-      .replace(/^### (.+)$/gm, '<h3>$1</h3>')  // Heading 3
-      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')  // Links
-      .replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>')  // Lists
-      .replace(/^\> (.+)$/gm, '<blockquote>$1</blockquote>')  // Blockquotes
-      .replace(/&/g, '&amp;')  // Escape &
-      .replace(/</g, '&lt;')  // Escape <
-      .replace(/>/g, '&gt;')  // Escape >
-      .replace(/\*/g, '×');  // Replace asterisks with multiplication symbol
+    let cleanText = result.response.text();
+    console.log('Raw response text:', cleanText);
 
-    console.log('Generated content:', cleanText);
+    // Replace markdown with HTML tags and symbols
+    try {
+      cleanText = cleanText
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold text
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Italic text
+        .replace(/`([^`]+)`/g, '<code>$1</code>')  // Inline code
+        .replace(/```([\s\S]+?)```/g, '<pre><code>$1</code></pre>')  // Code blocks
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')  // Heading 1
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')  // Heading 2
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')  // Heading 3
+        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')  // Links
+        .replace(/^\* (.+)$/gm, '<ul><li>$1</li></ul>')  // Lists
+        .replace(/^\> (.+)$/gm, '<blockquote>$1</blockquote>')  // Blockquotes
+        .replace(/&amp;/g, '&')  // Decode &
+        .replace(/&lt;/g, '<')  // Decode <
+        .replace(/&gt;/g, '>')  // Decode >
+        .replace(/\*/g, '×');  // Replace asterisks with multiplication symbol
+
+      console.log('Cleaned response text:', cleanText);
+    } catch (regexError) {
+      console.error('Error during text cleaning:', regexError);
+      throw regexError;
+    }
 
     return {
       statusCode: 200,
