@@ -1,15 +1,12 @@
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
+const { chromium } = require('playwright');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 let browser;
 
 async function getBrowserInstance() {
   if (!browser) {
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless
+    browser = await chromium.launch({
+      headless: true  // Run in headless mode
     });
   }
   return browser;
@@ -24,7 +21,8 @@ exports.handler = async function(event, context) {
 
   try {
     const browser = await getBrowserInstance();
-    const page = await browser.newPage();
+    const context = await browser.newContext();
+    const page = await context.newPage();
     await page.goto(url);
 
     const screenshot = await page.screenshot({ encoding: 'base64' });
@@ -73,5 +71,7 @@ exports.handler = async function(event, context) {
       statusCode: 500,
       body: JSON.stringify({ error: error.message })
     };
+  } finally {
+    await browser.close();  // Make sure to close the browser instance
   }
 };
