@@ -14,7 +14,8 @@
     "form-data": "^3.0.1",
     "fs": "^0.0.1-security",
     "@google/generative-ai": "^0.21.0",
-    "puppeteer": "^24.2.1"
+    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer-core": "^14.0.0"
   },
   "devDependencies": {
     "netlify-cli": "^6.14.1"

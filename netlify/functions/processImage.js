@@ -1,4 +1,5 @@
-const puppeteer = require('puppeteer');
+const chrome = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 let browser;
@@ -6,8 +7,9 @@ let browser;
 async function getBrowserInstance() {
   if (!browser) {
     browser = await puppeteer.launch({
-      args: ['--no-sandbox'],
-      executablePath: await puppeteer.executablePath()  // Ensure Puppeteer uses the installed Chrome
+      args: chrome.args,
+      executablePath: await chrome.executablePath,
+      headless: chrome.headless
     });
   }
   return browser;
