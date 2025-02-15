@@ -1,27 +1,47 @@
 const puppeteer = require('puppeteer');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-exports.handler = async function(event, context) {
+let browser;
+
+async function getBrowserInstance() {
+  if (!browser) {
+    browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  }
+  return browser;
+}
+
+exports.listTabs = async function(event, context) {
+  try {
+    const browser = await getBrowserInstance();
+    const pages = await browser.pages();
+    const tabs = pages.map(page => ({ title: page.title(), url: page.url() }));
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(tabs)
+    };
+  } catch (error) {
+    console.error('Error listing tabs:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
+};
+
+exports.captureTab = async function(event, context) {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
-  const { targetUrl, prompt } = JSON.parse(event.body);  // Parse the target URL and prompt from the request body
+  const { url, prompt } = JSON.parse(event.body);  // Parse the URL and prompt from the request body
 
   console.log('Received API request with prompt:', prompt);
-  console.log('Target URL to process:', targetUrl);
-
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });  // Launch Puppeteer
-  const pages = await browser.pages();  // Get all pages (tabs)
-  const mainPage = pages[0];  // Assume the main page is the first tab
+  console.log('URL to process:', url);
 
   try {
-    // Open a new tab and navigate to the target URL
-    const targetPage = await browser.newPage();
-    await targetPage.goto(targetUrl);
+    const browser = await getBrowserInstance();
+    const page = await browser.newPage();
+    await page.goto(url);
 
-    // Analyze the target page
-    const screenshot = await targetPage.screenshot({ encoding: 'base64' });
-
-    // Switch back to the main AI page
-    await mainPage.bringToFront();
+    const screenshot = await page.screenshot({ encoding: 'base64' });
 
     // Initialize GoogleGenerativeAI
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -59,13 +79,13 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ solution: cleanText }),
+      body: JSON.stringify({ solution: cleanText })
     };
   } catch (error) {
     console.error('Error during API request:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({ error: error.message })
     };
   }
 };

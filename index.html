@@ -10,18 +10,10 @@
 <body>
   <div class="container">
     <h1>IXL Helper</h1>
-    <div class="switches">
-      <button class="switch" data-subject="ela">ELA</button>
-      <button class="switch" data-subject="math">Math</button>
-      <button class="switch" data-subject="science">Science</button>
-    </div>
-    <div class="upload-box">
-      <input type="file" id="upload" accept="image/*">
-      <button onclick="processImage()">Upload and Analyze</button>
-    </div>
-    <div class="input-box">
-      <textarea id="text-input" placeholder="Type your issue here..."></textarea>
-      <button onclick="submitText()">Submit</button>
+    <div class="tab-list">
+      <button onclick="listTabs()">List Tabs</button>
+      <select id="tab-select"></select>
+      <button onclick="captureTab()">Capture Selected Tab</button>
     </div>
     <div id="result" class="result-box"></div>
   </div>

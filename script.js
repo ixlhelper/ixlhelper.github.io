@@ -21,88 +21,64 @@ function loadEruda() {
   });
 })();
 
-let currentSubject = 'ela';
+let tabs = [];
 
-async function processImage() {
-  const fileInput = document.getElementById('upload');
-  const file = fileInput.files[0];
-  const textInput = document.getElementById('text-input').value.trim();
-
-  let prompt = '';
-  switch (currentSubject) {
-    case 'ela':
-      prompt = textInput ? `Tell me a step by step solution to this ELA problem: ${textInput}` : 'Please provide an image or text to analyze for ELA.';
-      break;
-    case 'math':
-      prompt = textInput ? `Tell me a step by step solution to this Math problem: ${textInput}` : 'Please provide an image or text to analyze for Math.';
-      break;
-    case 'science':
-      prompt = textInput ? `Tell me a step by step solution to this Science problem: ${textInput}` : 'Please provide an image or text to analyze for Science.';
-      break;
-    default:
-      prompt = 'Please provide an image or text to analyze.';
-  }
-
-  if (!file && !textInput) {
-    alert('Please upload an image or type an issue.');
-    return;
-  }
-
-  if (file) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async function() {
-      const base64data = reader.result.split(',')[1];
-      const filename = file ? file.name : '';
-
-      try {
-        const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ file: base64data, filename: filename, prompt: prompt })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API request failed: ${errorText}`);
-        }
-
-        const result = await response.json();
-        displayResult(result.solution);
-      } catch (error) {
-        console.error('Error:', error);
-        alert(`Failed to process the image: ${error.message}`);
-      }
-    };
-  } else {
-    // Handle case where only text input is provided
-    try {
-      const response = await fetch(`${window.location.origin}/.netlify/functions/processImage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ file: null, filename: '', prompt: prompt })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API request failed: ${errorText}`);
-      }
-
-      const result = await response.json();
-      displayResult(result.solution);
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Failed to process the text: ${error.message}`);
+async function listTabs() {
+  try {
+    const response = await fetch(`${window.location.origin}/.netlify/functions/listTabs`, {
+      method: 'GET'
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${errorText}`);
     }
+    tabs = await response.json();
+
+    const tabSelect = document.getElementById('tab-select');
+    tabSelect.innerHTML = '';  // Clear previous options
+    tabs.forEach((tab, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = tab.title;
+      tabSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    alert(`Failed to list tabs: ${error.message}`);
   }
 }
 
-function submitText() {
-  processImage();
+async function captureTab() {
+  const tabSelect = document.getElementById('tab-select');
+  const selectedIndex = tabSelect.value;
+
+  if (selectedIndex === '') {
+    alert('Please select a tab.');
+    return;
+  }
+
+  const selectedTab = tabs[selectedIndex];
+
+  try {
+    const response = await fetch(`${window.location.origin}/.netlify/functions/captureTab`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: selectedTab.url, prompt: 'Analyze this tab:' })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API request failed: ${errorText}`);
+    }
+
+    const result = await response.json();
+    displayResult(result.solution);
+  } catch (error) {
+    console.error('Error:', error);
+    alert(`Failed to capture tab: ${error.message}`);
+  }
 }
 
 function displayResult(solution) {
@@ -114,19 +90,3 @@ function displayResult(solution) {
   solutionText.innerHTML = solution;  // Use innerHTML instead of textContent
   resultDiv.appendChild(solutionText);
 }
-
-document.querySelectorAll('.switch').forEach(button => {
-  button.addEventListener('click', function() {
-    currentSubject = this.dataset.subject;
-    const dotsColor = getComputedStyle(this).color;
-    document.querySelectorAll('.text-bubble').forEach(dot => dot.style.color = dotsColor);
-
-    const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = '';  // Clear previous results
-
-    const switchText = document.createElement('div');
-    switchText.className = 'text-bubble';
-    switchText.textContent = `Switched to ${currentSubject.toUpperCase()}`;
-    resultDiv.appendChild(switchText);
-  });
-});
