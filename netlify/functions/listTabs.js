@@ -1,13 +1,20 @@
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
+const fs = require('fs');
 
 let browser;
 
 async function getBrowserInstance() {
   if (!browser) {
+    // Ensure the Chromium binary is available
+    const executablePath = await chromium.executablePath;
+    if (!fs.existsSync(executablePath)) {
+      throw new Error('Chromium binary not found at the configured executablePath');
+    }
+
     browser = await puppeteer.launch({
       args: chromium.args,
-      executablePath: await chromium.executablePath,
+      executablePath: executablePath,
       headless: chromium.headless
     });
   }
