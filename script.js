@@ -32,7 +32,8 @@ async function listTabs() {
       const errorText = await response.text();
       throw new Error(`API request failed: ${errorText}`);
     }
-    tabs = await response.json();
+    const allTabs = await response.json();
+    tabs = allTabs.filter(tab => tab.url.includes('ixl.com'));  // Filter for ixl.com tabs
 
     const tabSelect = document.getElementById('tab-select');
     tabSelect.innerHTML = '';  // Clear previous options
@@ -42,6 +43,10 @@ async function listTabs() {
       option.textContent = tab.title;
       tabSelect.appendChild(option);
     });
+
+    if (tabs.length === 0) {
+      alert('No IXL tabs found.');
+    }
   } catch (error) {
     console.error('Error:', error);
     alert(`Failed to list tabs: ${error.message}`);
