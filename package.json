@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "build": "netlify deploy --prod",
-    "dev": "netlify dev"
+    "dev": "netlify dev",
+    "postinstall": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false npm install puppeteer"
   },
   "dependencies": {
     "express": "^4.17.1",
