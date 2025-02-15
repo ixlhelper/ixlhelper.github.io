@@ -10,28 +10,27 @@ async function getBrowserInstance() {
   return browser;
 }
 
-exports.listTabs = async function(event, context) {
+// Function to list tabs
+exports.listTabs = async function(req, res) {
   try {
     const browser = await getBrowserInstance();
     const pages = await browser.pages();
-    const tabs = pages.map(page => ({ title: page.title(), url: page.url() }));
+    const tabs = await Promise.all(pages.map(async page => ({
+      title: await page.title(),
+      url: await page.url()
+    })));
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(tabs)
-    };
+    res.status(200).json(tabs);
   } catch (error) {
     console.error('Error listing tabs:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message })
-    };
+    res.status(500).json({ error: error.message });
   }
 };
 
-exports.captureTab = async function(event, context) {
+// Function to capture a tab
+exports.captureTab = async function(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
-  const { url, prompt } = JSON.parse(event.body);  // Parse the URL and prompt from the request body
+  const { url, prompt } = req.body;  // Parse the URL and prompt from the request body
 
   console.log('Received API request with prompt:', prompt);
   console.log('URL to process:', url);
@@ -77,15 +76,9 @@ exports.captureTab = async function(event, context) {
 
     console.log('Cleaned response text:', cleanText);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ solution: cleanText })
-    };
+    res.status(200).json({ solution: cleanText });
   } catch (error) {
     console.error('Error during API request:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message })
-    };
+    res.status(500).json({ error: error.message });
   }
 };

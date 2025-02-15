@@ -1,12 +1,18 @@
 const express = require('express');
 const path = require('path');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
+
+// Importing functions from /netlify/functions
+const { listTabs, captureTab } = require('./netlify/functions/processimage');
+
+// Define routes for functions
+app.get('/.netlify/functions/listTabs', listTabs);
+app.post('/.netlify/functions/captureTab', captureTab);
 
 app.post('/.netlify/functions/processImage', async (req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
