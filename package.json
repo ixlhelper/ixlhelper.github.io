@@ -18,7 +18,6 @@
     "puppeteer": "^24.2.1"
   },
   "devDependencies": {
-    "netlify-cli": "^6.14.1",
-    "@netlify/plugin-functions-install-node-modules": "^1.0.0"
+    "netlify-cli": "^6.14.1"
   }
 }
