@@ -11,8 +11,9 @@ app.use(express.json());
 const { listTabs, captureTab } = require('./netlify/functions/processimage');
 
 // Define routes for functions
-app.get('/.netlify/functions/listTabs', listTabs);
-app.post('/.netlify/functions/captureTab', captureTab);
+app.get('/.netlify/functions/listTabs', require('./netlify/functions/listTabs').handler);
+app.post('/.netlify/functions/captureTab', require('./netlify/functions/captureTab').handler);
+app.post('/.netlify/functions/processImage', require('./netlify/functions/processImage').handler);
 
 app.post('/.netlify/functions/processImage', async (req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;  // Ensure your API key is set in Netlify
